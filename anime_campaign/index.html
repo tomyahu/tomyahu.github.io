@@ -1,6 +1,128 @@
 <html>
-<head>Tomimi Page</head>
+<head></head>
 <body>
-<p>Hola</p>
+
+<script>
+var dice = {}
+dice['1d100'] = {
+	'avg': 50.5
+}
+dice['1d20'] = {
+	'avg': 10.5
+}
+dice['1d12'] = {
+	'avg': 6.5
+}
+dice['1d10'] = {
+	'avg': 5.5
+}
+dice['1d8'] = {
+	'avg': 4.5
+}
+dice['1d6'] = {
+	'avg': 3.5
+}
+dice['1d4'] = {
+	'avg': 2.5
+}
+</script>
+
+<h2>Passive Generator</h2>
+<p id="generated_passive"></p>
+
+<script>
+var graph = {}
+
+var triggers = {
+	'an enemy moves ': 5,
+	'an enemy hits you ': 3,
+	'an ally moves ': 5,
+	'an ally gets hit ': 5,
+	'an enemy hits you with a ranged attack ': 3,
+	'an enemy hits you with a melee attack ': 3
+}
+
+var triggers = {
+	'an enemy hits you ': 5,
+	'an enemy hits you with a ranged attack ': 3,
+	'an enemy hits you with a melee attack ': 3,
+	'an enemy hits you with magic ': 3,
+}
+
+var dice_result = {
+	'higher than your enemy\'s roll, ': 3,
+	'lower than your enemy\'s roll, ': 3,
+	'equal to your enemy\'s roll, ': 1,
+}
+
+var effects = {
+	'you reflect the attack ': 1
+}
+
+function addStateToGraph(id, next, text){
+	graph[id] = {
+	'next': next,
+	'text': text
+	};
+}
+
+addStateToGraph('start', ['when'], ['']);
+addStateToGraph('when', ['triggers'], ['When ']);
+addStateToGraph('triggers', ['roll', 'flip'], Object.keys(triggers));
+addStateToGraph('roll', ['dice'], ['roll a ']);
+addStateToGraph('flip', ['coin'], ['flip a coin, ']);
+addStateToGraph('dice', ['dice_result'], Object.keys(dice));
+addStateToGraph('dice_result', ['effect'], Object.keys(dice_result));
+
+addStateToGraph('coin', ['effect'], ['if it lands on heads ', 'coin, if it lands on tails ']);
+addStateToGraph('effect', ['end'], Object.keys(effects));
+addStateToGraph('end', [''], ['.']);
+
+
+function generate_passive(){
+	let current_state = 'start';
+	let passive = '';
+
+	while (current_state != '') {
+		const next_state_id = Math.floor(Math.random() * graph[current_state]['next'].length);
+		current_state = graph[current_state]['next'][next_state_id];
+
+		const current_state_str_id = Math.floor(Math.random() * graph[current_state]['next'].length);
+		passive += graph[current_state]['text'][current_state_str_id];
+
+		
+	}
+
+	return passive;
+}
+
+console.log(generate_passive());
+</script>
+
+
+
+<h2>Talent Generator</h2>
+<p>This is a full random talent generator of only battle mechanics. Feel free to change the talents generated to add flavor and utility.</p>
+<p id="generated_talent"></p>
+<script>
+var conditions = {
+	'immobilized': 3,
+	'blind': 3,
+	'deaf': 1,
+	'asleep': 5,
+	'<half speed>': 2,
+	'<condition related to your epithet>': 3
+};
+
+var triggers = {
+	'An enemy moves': 5,
+	'An enemy hits you': 3,
+	'An ally moves': 5,
+	'An ally gets hit': 5,
+	'An enemy hits you with a ranged attack': 3,
+	'An enemy hits you with a melee attack': 3
+}
+
+</script>
 </body>
 </html>
