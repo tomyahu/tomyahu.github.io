@@ -25,10 +25,75 @@ dice['1d6'] = {
 dice['1d4'] = {
 	'avg': 2.5
 }
+
+function rollDie(sides) {
+	return Math.floor(Math.random() * sides) + 1
+}
+</script>
+
+
+<h2>Stats</h2>
+<p>Stamina: <span id='stamina_val'></span></p>
+<p>Proficiency: <span id='proficiency_val'></span></p>
+<p>Move: <span id='movement_val'></span></p>
+<button onclick="rerollStats();">Reroll</button>
+
+<select id="build" onchange="reapplyBuild();">
+	<option value="svelte">Svelte</option>
+	<option value="average">Average</option>
+	<option value="heavyset">Heavyset</option>
+</select>
+
+<script>
+var current_build = 'average';
+var builds = {
+	'svelte': {
+		'stamina': 10,
+		'movement': 6
+	},
+	'average': {
+		'stamina': 15,
+		'movement': 5
+	},
+	'heavyset': {
+		'stamina': 20,
+		'movement': 4
+	},
+}
+
+function unapplyBuild() {
+	let stamina = parseInt(document.getElementById('stamina_val').innerHTML)
+	stamina -= builds[current_build]['stamina']
+	document.getElementById('stamina_val').innerHTML = stamina;
+}
+
+function applyBuild() {
+	current_build = document.getElementById('build').value;
+
+	let stamina = parseInt(document.getElementById('stamina_val').innerHTML)
+	stamina += builds[current_build]['stamina']
+	document.getElementById('stamina_val').innerHTML = stamina;
+	document.getElementById('movement_val').innerHTML = builds[current_build]['movement'];
+}
+
+function reapplyBuild() {
+	unapplyBuild();
+	applyBuild();
+}
+
+
+function rerollStats() {
+	document.getElementById('stamina_val').innerHTML = rollDie(20);
+	document.getElementById('proficiency_val').innerHTML = rollDie(20);
+	applyBuild()
+}
+
+rerollStats();
 </script>
 
 <h2>Passive Generator</h2>
 <p id="generated_passive"></p>
+<button onclick="generatePassive();">Refresh</button>
 
 <script>
 var graph = {}
@@ -53,10 +118,11 @@ var dice_result = {
 	'higher than your enemy\'s roll, ': 3,
 	'lower than your enemy\'s roll, ': 3,
 	'equal to your enemy\'s roll, ': 1,
+	'a crit, ': 1,
 }
 
 var effects = {
-	'you reflect the attack ': 1
+	'you reflect the attack': 1
 }
 
 function addStateToGraph(id, next, text){
@@ -71,7 +137,8 @@ addStateToGraph('when', ['triggers'], ['When ']);
 addStateToGraph('triggers', ['roll', 'flip'], Object.keys(triggers));
 addStateToGraph('roll', ['dice'], ['roll a ']);
 addStateToGraph('flip', ['coin'], ['flip a coin, ']);
-addStateToGraph('dice', ['dice_result'], Object.keys(dice));
+addStateToGraph('dice', ['if_dice_result'], ['1d20 ']);
+addStateToGraph('if_dice_result', ['dice_result'], ['if the roll is ']);
 addStateToGraph('dice_result', ['effect'], Object.keys(dice_result));
 
 addStateToGraph('coin', ['effect'], ['if it lands on heads ', 'coin, if it lands on tails ']);
@@ -79,24 +146,22 @@ addStateToGraph('effect', ['end'], Object.keys(effects));
 addStateToGraph('end', [''], ['.']);
 
 
-function generate_passive(){
+function generatePassive(){
 	let current_state = 'start';
 	let passive = '';
 
 	while (current_state != '') {
-		const next_state_id = Math.floor(Math.random() * graph[current_state]['next'].length);
-		current_state = graph[current_state]['next'][next_state_id];
-
 		const current_state_str_id = Math.floor(Math.random() * graph[current_state]['next'].length);
 		passive += graph[current_state]['text'][current_state_str_id];
 
-		
+		const next_state_id = Math.floor(Math.random() * graph[current_state]['next'].length);
+		current_state = graph[current_state]['next'][next_state_id];
 	}
 
-	return passive;
+	document.getElementById('generated_passive').innerHTML = passive;
 }
 
-console.log(generate_passive());
+generatePassive();
 </script>
 
 
